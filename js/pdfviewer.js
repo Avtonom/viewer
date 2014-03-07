@@ -58,6 +58,8 @@ var pdfViewer = (function(pdfViewer, $) {
 		var self = this;
 		self.options = opts || {};
 
+        self.inner();//ant
+
 		/*
 		кешируем элементы а затем навешиваем обработчики событий
 		*/
@@ -81,12 +83,16 @@ var pdfViewer = (function(pdfViewer, $) {
 			type: 'inline',
 			callbacks: {
 				beforeOpen: function() {
+
 					var from, src;
 					popupPlugin = $.magnificPopup.instance;
 					/*
 					устанавливаем высоту плагина не более высоты окна
 					*/
-					elms.$boxes.css('height', elms.$win.height() - padd * 2);
+                    elms_win_height = elms.$win.height() - padd * 2;
+					elms.$boxes.css('height', elms_win_height);
+                    elms.$list.css('height', elms_win_height);//ant
+                    elms.$boxes.find('.inner').css('height', elms_win_height);//ant
 
 					/*
 					вычисляем с какой страницы осуществить показ
@@ -104,13 +110,16 @@ var pdfViewer = (function(pdfViewer, $) {
 						var basePatch = data['base_patch'],
 							strElems = '';
 
+                        elms.$list.empty();//ant
+
 						elms.$countPage.html(data['page_count']);
 
 						$.each( data['data_files'] , function( key, val ) {
 							var srcPath = basePatch + '/' + val;
-							strElems = strElems + '<li class="item" data-big_src="' + srcPath + '"><img src="' + basePatch + '/thumb/' + val + '"><span class="tb"></span><span class="bb"></span><span class="lb"></span><span class="rb"></span></li>';
+							strElems = '<li class="item" data-big_src="' + srcPath + '"><img src="' + basePatch + '/thumb/' + val + '"><span class="tb"></span><span class="bb"></span><span class="lb"></span><span class="rb"></span></li>';
+                            $(strElems).appendTo( elms.$list );//ant
 						});
-						elms.$list.html(strElems);
+//						elms.$list.html(strElems);
 						elms.$list.find('.item').eq(initFrom).trigger('click');
 						// elms.$list.find('img').lazy();
 					});
@@ -146,6 +155,38 @@ var pdfViewer = (function(pdfViewer, $) {
 
 	};
 
+    //ant
+    pdfViewer.inner = function() {
+        html_inner =
+        '<table id="viewerWrapper" class="mfp-hide"><tr>' +
+        			'<td id="thumbnails">' +
+        				'<div class="box">' +
+        					'<div id="width_separator"></div>' +
+        					'<div class="inner">' +
+        						'<div class="count" id="count">' +
+        							'<span id="current_page" class="current_page" >1</span> из <span id="current_page_count">*</span>' +
+        						'</div>' +
+        						'<ul id="list_thumbnails" class="list"></ul>' +
+        					'</div>' +
+        				'</div>' +
+        			'</td>' +
+        			'<td id="main_view">' +
+        				'<div class="box">' +
+        					'<div class="inner">' +
+        						'<div id="height_separator">' +
+        							'<div id="toggle_sidebar" class="toggle" title="скрыть"><</div>' +
+        						'</div>' +
+        						'<img src="/img/main.png" alt="" class="img" id="main_page">' +
+        					'</div>' +
+        				'</div>' +
+        			'</td>' +
+            '</tr></table>';
+        if($('#viewerWrapper').length){
+            $('#viewerWrapper').remove();
+        }
+        $(html_inner).appendTo( 'body' );
+   };
+
 	/*
 	метод привязки к объектам событий пользователя
 	*/
@@ -165,6 +206,10 @@ var pdfViewer = (function(pdfViewer, $) {
 			$this.addClass('active');
 			elms.$currentPage.html($this.index() + 1);
 			elms.$img.attr('src', $this.data('big_src'));
+
+            $this.find('img').load(function() {//ant
+                elms.$list.scrollTop( $this.height() * $this.index());
+            });
 		});
 
 		/*
@@ -199,5 +244,5 @@ $(function (){
 		minWidthPreview: 140, //минимальная ширина страниц превью
 		maxWidthPreview: 300 //максимальная ширина страниц превью
 	})
-//    $('.link').click();//@todo for test
+    $('.link:first').click();//@todo for test //ant
 });
