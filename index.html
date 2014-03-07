@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!--[if IE 7 ]><html class="ie7" lang="ru"><![endif]-->
+<!--[if IE 8 ]><html class="ie8" lang="ru"><![endif]-->
+<!--[if IE 9 ]><html class="ie9" lang="ru"><![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--><html lang="ru"><!--<![endif]-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<meta name="viewport" content="width=1024">
+<meta name="format-detection" content="telephone=no">
+
+<title>PDF Viewer</title>
+
+<link href="/js/vendor/baron/baron.css" rel="stylesheet" type="text/css">
+<link href="/js/vendor/magnific-popup/dist/magnific-popup.css" rel="stylesheet" type="text/css">
+<link href="/css/pdfviewer.css" rel="stylesheet" type="text/css">
+
+<script src="/js/vendor/jquery/dist/jquery.min.js"></script>
+<script src="/js/vendor/baron/baron.min.js"></script>
+<script src="/js/vendor/lazyloader/jquery.lazy.min.js"></script>
+<script src="/js/vendor/magnific-popup/dist/jquery.magnific-popup.min.js"></script>
+<script src="/js/pdfviewer.js"></script>
+
+</head>
+<body>
+	<a href="#viewerWrapper" class="link" data-init_from="3" data-src="api.php">Show</a> ||
+	<a href="test.php">Test API</a> ||
+	<a href="api.php">API</a>
+
+	<table id="viewerWrapper" class="mfp-hide">
+		<tr>
+			<td id="thumbnails">
+				<div class="box">
+					<div id="width_separator"></div>
+
+					<div class="inner">
+						<div class="count" id="count">
+							<span id="current_page" class="current_page" >1</span> из <span id="current_page_count">*</span>
+						</div>
+						<ul id="list_thumbnails" class="list"></ul>
+
+					</div>
+				</div>
+			</td>
+			<td id="main_view">
+				<div class="box">
+					<div class="inner">
+						<div id="height_separator">
+							<div id="toggle_sidebar" class="toggle" title="скрыть"><</div>
+						</div>
+
+						<img src="/img/main.png" alt="" class="img" id="main_page">
+					</div>
+				</div>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
