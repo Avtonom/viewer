@@ -126,6 +126,7 @@ var pdfViewer = (function(pdfViewer, $) {
 						});
 						elms.$list.html(strElems);
 						elms.$listItems = elms.$list.find('.item');
+						elms.$listItems = elms.$list.find('.item');
 						if (initFrom > 0) {
 							needAutoScroll = true;
 						}
@@ -168,7 +169,6 @@ var pdfViewer = (function(pdfViewer, $) {
 
 	};
 
-    //ant
     pdfViewer.inner = function() {
         if(!$('#viewerWrapper').length){
 	        var html_inner =
@@ -192,6 +192,8 @@ var pdfViewer = (function(pdfViewer, $) {
 	        				'<div class="box">' +
 	        					'<div class="inner">' +
 	        						'<div id="height_separator"></div>' +
+	        						'<a href="#previous" id="b_page_previous"><<</a>' +
+	        						'<a href="#next" id="b_page_next">>></a>' +
 	        					'</div>' +
 	        				'</div>' +
 	        				'</div>' +
@@ -200,6 +202,21 @@ var pdfViewer = (function(pdfViewer, $) {
 	        $(html_inner).appendTo( 'body' );
         }
    };
+
+    /*
+    листание большой картинки
+     */
+    pdfViewer.paging  = function(dirIndent) {
+        if (
+                currentSelect + dirIndent < elms.$listItems.length &&
+                currentSelect + dirIndent >= 0
+            ) {
+            preview = elms.$listItems.eq(currentSelect + dirIndent);
+            preview.click();
+            elms.$boxPreviews.scrollTop(0);
+            elms.$boxPreviews.scrollTop( preview.height() + preview.position().top + 20 - elms.$view.height() );
+        }
+    };
 
 	/*
 	метод привязки к объектам событий пользователя
@@ -218,6 +235,7 @@ var pdfViewer = (function(pdfViewer, $) {
 		подгрузка новых страниц в блок просмотра при его прокрутке
 		*/
 		elms.$boxOuterMainView.on('scroll', function() {
+            return true;
 			startIndex = elms.$images.index(elms.$img);
 			viewTopIndent > elms.$boxOuterMainView.scrollTop() ? scrollDir = 'top' : scrollDir = 'down';
 			scrollDir === 'down' ? dirIndent = 1 : dirIndent = -1;
@@ -244,6 +262,16 @@ var pdfViewer = (function(pdfViewer, $) {
 			viewTopIndent = elms.$boxOuterMainView.scrollTop();
 		});
 
+        /*
+        листание большой картинки
+         */
+        elms.$view.on('click', '#b_page_previous', function() {
+            pdfViewer.paging(-1)
+        });
+        elms.$view.on('click', '#b_page_next', function() {
+            pdfViewer.paging(1)
+        });
+
 		/*
 		клик на превью - отображение большой фотки
 		*/
@@ -258,20 +286,24 @@ var pdfViewer = (function(pdfViewer, $) {
 
 			elms.$boxMainView.find('img').remove();
 
-			if (elms.$listItems.length === 1) {
+            if(1){
+                strImgs = '<img src="' + elms.$listItems.eq(currentSelect).data('big_src') + '" id="main_page" class="img">';
+            } else {
+                if (elms.$listItems.length === 1) {
 
-			} else if (currentSelect === 0) {
-				strImgs += '<img src="' + elms.$listItems.eq(1).data('big_src') + '" class="img">';
-				if (elms.$listItems.length > 2) {
-					strImgs += '<img src="' + elms.$listItems.eq(2).data('big_src') + '" class="img">';
-				}
-			} else if (currentSelect === elms.$listItems.length - 1) {
-				strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 1).data('big_src') + '" class="img">' + strImgs;
-				if (currentSelect - 2 >= 0) {
-					strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 2).data('big_src') + '" class="img">' + strImgs;
-				}
-			} else {
-				strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 1).data('big_src') + '" class="img">' + strImgs + '<img src="' + elms.$listItems.eq(currentSelect + 1).data('big_src') + '" class="img">';
+                } else if (currentSelect === 0) {
+                    strImgs += '<img src="' + elms.$listItems.eq(1).data('big_src') + '" class="img">';
+                    if (elms.$listItems.length > 2) {
+                        strImgs += '<img src="' + elms.$listItems.eq(2).data('big_src') + '" class="img">';
+                    }
+                } else if (currentSelect === elms.$listItems.length - 1) {
+                    strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 1).data('big_src') + '" class="img">' + strImgs;
+                    if (currentSelect - 2 >= 0) {
+                        strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 2).data('big_src') + '" class="img">' + strImgs;
+                    }
+                } else {
+                    strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 1).data('big_src') + '" class="img">' + strImgs + '<img src="' + elms.$listItems.eq(currentSelect + 1).data('big_src') + '" class="img">';
+                }
 			}
 			elms.$boxMainView.append(strImgs);
 			elms.$img = $('#main_page');
@@ -345,5 +377,5 @@ $(function (){
 		minWidthPreview: 140, //минимальная ширина страниц превью
 		maxWidthPreview: 300 //максимальная ширина страниц превью
 	})
-    // $('.link:first').click();//@todo for test //ant
+    $('.link:first').click();//@todo for test //ant
 });
