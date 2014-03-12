@@ -2,6 +2,7 @@ var pdfViewer = (function(pdfViewer, $) {
 	var popupPlugin = null; //для сохранения окружения плагина попапа
 		elms = {}, //хранит кешированные элементы
 		padd = 25, //паддинг сверху и снизу у попапа от края окна
+		marg = 30,
 		initFrom = 0, //по умолчанию какую страницу показывать первой
 		visiblePreview = true, //флаг отображения превьюшек
 		widthPreview = {width: 0, saved: 0}, //объект для работы с шириной бокса превью
@@ -19,7 +20,7 @@ var pdfViewer = (function(pdfViewer, $) {
 	widthPreview.setWidth = function(newWidth) {
 		this.width = newWidth;
 
-		elms.$widthSeparator.width(this.width);
+		elms.$boxW.width(this.width);
 	}
 	/*
 	метод сохранения ширины превью - нужен для восстанвления ширины превью после 
@@ -35,13 +36,15 @@ var pdfViewer = (function(pdfViewer, $) {
 	toggler.run = function() {
 
 		visiblePreview = !visiblePreview;
-		elms.$heightSeparator.add(elms.$boxPreviews).add(elms.$countBox).toggleClass('hide');
+		elms.$heightSeparator.add(elms.$boxPreviews).add(elms.$previewToolbar).toggleClass('hide');
 		if (visiblePreview) {
 			widthPreview.setWidth( widthPreview.saved );
 			elms.$togglePreview.html('<');
+			elms.$togglePreview.removeClass('hided');
 		} else {
 			widthPreview.setWidth(0);
 			elms.$togglePreview.html('>');
+			elms.$togglePreview.addClass('hided');
 		}
 
 	}
@@ -87,6 +90,9 @@ var pdfViewer = (function(pdfViewer, $) {
 		$('.' + self.options.className).magnificPopup({
 			type: 'inline',
 			callbacks: {
+				open: function() {
+
+				},
 				beforeOpen: function() {
 
 					var from, src;
@@ -94,7 +100,7 @@ var pdfViewer = (function(pdfViewer, $) {
 					/*
 					устанавливаем высоту плагина не более высоты окна
 					*/
-					elms.$boxes.css('height', elms.$win.height() - padd * 2);
+					elms.$boxes.css('height', elms.$win.height() - padd * 2 - marg);
                     // elms.$list.css('height', elms_win_height);//ant
                     // elms.$boxes.find('.inner').css('height', elms_win_height);//ant
 
@@ -126,7 +132,7 @@ var pdfViewer = (function(pdfViewer, $) {
 						});
 						elms.$list.html(strElems);
 						elms.$listItems = elms.$list.find('.item');
-						elms.$listItems = elms.$list.find('.item');
+						// elms.$listItems = elms.$list.find('.item');
 						if (initFrom > 0) {
 							needAutoScroll = true;
 						}
@@ -138,6 +144,16 @@ var pdfViewer = (function(pdfViewer, $) {
 		});
 
 	};
+
+	pdfViewer.checkBtns = function(val) {
+		elms.$img.css('visibility', 'hidden');
+		elms.$btns.removeClass('disable');
+		if (val <= 0) {
+			elms.$btn_prev.addClass('disable');
+		} else if (val >= elms.$listItems.length - 1) {
+			elms.$btn_next.addClass('disable');
+		}
+	}
 
 	/*
 	метод кеширования элементов
@@ -153,12 +169,18 @@ var pdfViewer = (function(pdfViewer, $) {
 		elms.$togglePreview = $('#toggle_sidebar');
 		elms.$list = $('#list_thumbnails');
 		elms.$listItems = $();
-		elms.$images = $();
+		// elms.$images = $();
 		elms.$countBox = $('#count');
 		elms.$countPage = $('#current_page_count');
 		elms.$currentPage = $('#current_page');
 		elms.$boxMainView = $('#main_view .inner');
 		elms.$boxOuterMainView = $('#main_view .box');
+		elms.$previewToolbar = $('#thumbnails .toolbar');
+		elms.$boxW = $('#thumbnails .box_outer');
+		elms.$img = $('#main_page');
+		elms.$btns = elms.$view.find('.btns_p');
+		elms.$btn_prev = $('#b_page_previous');
+		elms.$btn_next = $('#b_page_next');
 
 		/*
 		если есть коллбэк - вызываем
@@ -175,27 +197,30 @@ var pdfViewer = (function(pdfViewer, $) {
 	        '<table id="viewerWrapper" class="mfp-hide"><tr>' +
 	        			'<td id="thumbnails">' +
 	        				'<div class="box_outer">' +
-    						'<div class="count" id="count">' +
-    							'<input type="text" name="" id="current_page" class="current_page" value="1"> из <span id="current_page_count">*</span>' +
-    						'</div>' +
-	        				'<div class="box">' +
-	        					'<div id="width_separator"></div>' +
-	        					'<div class="inner">' +
-	        						'<ul id="list_thumbnails" class="list"></ul>' +
-	        					'</div>' +
-	        				'</div>' +
+		        				'<div class="toolbar">' + 
+		    						'<div class="count" id="count">' +
+		    							'<input type="text" name="" id="current_page" class="current_page" value="1"> из <span id="current_page_count">*</span>' +
+		    						'</div>' +
+	    						'</div>' +
+		        				'<div class="box">' +
+		        					'<div id="width_separator"></div>' +
+		        					'<div class="inner">' +
+		        						'<ul id="list_thumbnails" class="list"></ul>' +
+		        					'</div>' +
+		        				'</div>' +
 	        				'</div>' +
 	        			'</td>' +
 	        			'<td id="main_view">' +
 	        				'<div class="box_outer">' +
-	        				'<div id="toggle_sidebar" class="toggle" title="скрыть"><</div>' +
-	        				'<div class="box">' +
-	        					'<div class="inner">' +
-	        						'<div id="height_separator"></div>' +
-	        						'<a href="#previous" id="b_page_previous"><<</a>' +
-	        						'<a href="#next" id="b_page_next">>></a>' +
-	        					'</div>' +
-	        				'</div>' +
+		        				'<div id="height_separator"></div>' +
+		        				'<div class="toolbar">' +
+			        				'<div id="toggle_sidebar" class="toggle btns" title="скрыть"><</div>' +
+			        				'<span id="b_page_previous" class="btns btns_p"><<</span>' +
+		        					'<span id="b_page_next" class="btns btns_p">>></span>' +
+			        			'</div>' +
+		        				'<div class="box">' +
+		        					'<div class="inner"><img src="" class="img" id="main_page"></div>' +
+		        				'</div>' +
 	        				'</div>' +
 	        			'</td>' +
 	            '</tr></table>';
@@ -211,7 +236,7 @@ var pdfViewer = (function(pdfViewer, $) {
                 currentSelect + dirIndent < elms.$listItems.length &&
                 currentSelect + dirIndent >= 0
             ) {
-            preview = elms.$listItems.eq(currentSelect + dirIndent);
+            var preview = elms.$listItems.eq(currentSelect + dirIndent);
             preview.click();
             elms.$boxPreviews.scrollTop(0);
             elms.$boxPreviews.scrollTop( preview.height() + preview.position().top + 20 - elms.$view.height() );
@@ -222,9 +247,6 @@ var pdfViewer = (function(pdfViewer, $) {
 	метод привязки к объектам событий пользователя
 	*/
 	pdfViewer.binding = function() {
-		var preview,
-			startIndex,
-			dirIndent;
 
 		/*
 		клик на кнопке скрытия/открытия превьюшек
@@ -234,33 +256,33 @@ var pdfViewer = (function(pdfViewer, $) {
 		/*
 		подгрузка новых страниц в блок просмотра при его прокрутке
 		*/
-		elms.$boxOuterMainView.on('scroll', function() {
-            return true;
-			startIndex = elms.$images.index(elms.$img);
-			viewTopIndent > elms.$boxOuterMainView.scrollTop() ? scrollDir = 'top' : scrollDir = 'down';
-			scrollDir === 'down' ? dirIndent = 1 : dirIndent = -1;
+		// elms.$boxOuterMainView.on('scroll', function() {
+  //           return true;
+		// 	startIndex = elms.$images.index(elms.$img);
+		// 	viewTopIndent > elms.$boxOuterMainView.scrollTop() ? scrollDir = 'top' : scrollDir = 'down';
+		// 	scrollDir === 'down' ? dirIndent = 1 : dirIndent = -1;
 
-			if (startIndex < elms.$images.length - 1 && elms.$images.eq(startIndex + 1 * dirIndent).position().top - elms.$boxOuterMainView.scrollTop() <= (elms.$win.height() - padd * 2) / 2) {
-				elms.$listItems.eq(currentSelect).removeClass('active');
-				currentSelect = currentSelect + 1 * dirIndent;
-				preview = elms.$listItems.eq(currentSelect);
-				preview.addClass('active');
-				elms.$images.eq(startIndex).removeAttr('id');
-				elms.$images.eq(startIndex + 1 * dirIndent).attr('id', 'main_page');
-				elms.$img = elms.$images.eq(startIndex + 1 * dirIndent);
-				elms.$currentPage.val(currentSelect + 1 * dirIndent);
-				if (preview.height() + preview.position().top > elms.$view.height()) {
-					elms.$boxPreviews.scrollTop(0);
-					elms.$boxPreviews.scrollTop( preview.height() + preview.position().top + 20 - elms.$view.height() );
-				}
-			}
-			// if (startIndex === 1 && currentSelect + 1 <= elms.$listItems.length - 1) {
-			// 	elms.$images.eq(startIndex - 1).remove();
-			// 	elms.$boxMainView.append('<img src="' + elms.$listItems.eq(currentSelect + 1).data('big_src') + '" class="img">');
-			// }
-			elms.$images = elms.$boxMainView.find('img');
-			viewTopIndent = elms.$boxOuterMainView.scrollTop();
-		});
+		// 	if (startIndex < elms.$images.length - 1 && elms.$images.eq(startIndex + 1 * dirIndent).position().top - elms.$boxOuterMainView.scrollTop() <= (elms.$win.height() - padd * 2) / 2) {
+		// 		elms.$listItems.eq(currentSelect).removeClass('active');
+		// 		currentSelect = currentSelect + 1 * dirIndent;
+		// 		preview = elms.$listItems.eq(currentSelect);
+		// 		preview.addClass('active');
+		// 		elms.$images.eq(startIndex).removeAttr('id');
+		// 		elms.$images.eq(startIndex + 1 * dirIndent).attr('id', 'main_page');
+		// 		elms.$img = elms.$images.eq(startIndex + 1 * dirIndent);
+		// 		elms.$currentPage.val(currentSelect + 1 * dirIndent);
+		// 		if (preview.height() + preview.position().top > elms.$view.height()) {
+		// 			elms.$boxPreviews.scrollTop(0);
+		// 			elms.$boxPreviews.scrollTop( preview.height() + preview.position().top + 20 - elms.$view.height() );
+		// 		}
+		// 	}
+		// 	// if (startIndex === 1 && currentSelect + 1 <= elms.$listItems.length - 1) {
+		// 	// 	elms.$images.eq(startIndex - 1).remove();
+		// 	// 	elms.$boxMainView.append('<img src="' + elms.$listItems.eq(currentSelect + 1).data('big_src') + '" class="img">');
+		// 	// }
+		// 	elms.$images = elms.$boxMainView.find('img');
+		// 	viewTopIndent = elms.$boxOuterMainView.scrollTop();
+		// });
 
         /*
         листание большой картинки
@@ -272,52 +294,64 @@ var pdfViewer = (function(pdfViewer, $) {
             pdfViewer.paging(1)
         });
 
+	    elms.$img.on('load', function() {
+	    	elms.$img.css('visibility', 'visible');
+			if (needAutoScroll) {
+				elms.$boxPreviews.scrollTop(0);
+				elms.$boxPreviews.scrollTop( elms.$listItems.eq(currentSelect).position().top - 30 );
+				needAutoScroll = false;
+			}
+			// if (currentSelect !== 0) {
+			// 	elms.$boxOuterMainView.scrollTop( elms.$img.position().top );
+			// }
+		});
+
 		/*
 		клик на превью - отображение большой фотки
 		*/
 		elms.$view.on('click', '#list_thumbnails .item', function() {
-			var $this = $(this),
-				strImgs = '<img src="" class="img" id="main_page">';
+			var $this = $(this);
 
 			currentSelect = $this.index();
 			$this.siblings().removeClass('active');
 			$this.addClass('active');
 			elms.$currentPage.val(currentSelect + 1);
+			pdfViewer.checkBtns(currentSelect);
 
-			elms.$boxMainView.find('img').remove();
+			// elms.$boxMainView.find('img').remove();
 
-            if(1){
-                strImgs = '<img src="' + elms.$listItems.eq(currentSelect).data('big_src') + '" id="main_page" class="img">';
-            } else {
-                if (elms.$listItems.length === 1) {
+   //          if(1){
+   //              strImgs = '<img src="' + elms.$listItems.eq(currentSelect).data('big_src') + '" id="main_page" class="img">';
+   //          } else {
+   //              if (elms.$listItems.length === 1) {
 
-                } else if (currentSelect === 0) {
-                    strImgs += '<img src="' + elms.$listItems.eq(1).data('big_src') + '" class="img">';
-                    if (elms.$listItems.length > 2) {
-                        strImgs += '<img src="' + elms.$listItems.eq(2).data('big_src') + '" class="img">';
-                    }
-                } else if (currentSelect === elms.$listItems.length - 1) {
-                    strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 1).data('big_src') + '" class="img">' + strImgs;
-                    if (currentSelect - 2 >= 0) {
-                        strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 2).data('big_src') + '" class="img">' + strImgs;
-                    }
-                } else {
-                    strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 1).data('big_src') + '" class="img">' + strImgs + '<img src="' + elms.$listItems.eq(currentSelect + 1).data('big_src') + '" class="img">';
-                }
-			}
-			elms.$boxMainView.append(strImgs);
-			elms.$img = $('#main_page');
-			elms.$images = elms.$boxMainView.find('img');
-			elms.$img.one('load', function() {
-				if (needAutoScroll) {
-					elms.$boxPreviews.scrollTop(0);
-					elms.$boxPreviews.scrollTop( elms.$listItems.eq(currentSelect).position().top - 15 );
-					needAutoScroll = false;
-				}
-				if (currentSelect !== 0) {
-					elms.$boxOuterMainView.scrollTop( elms.$img.position().top );
-				}
-			});
+   //              } else if (currentSelect === 0) {
+   //                  strImgs += '<img src="' + elms.$listItems.eq(1).data('big_src') + '" class="img">';
+   //                  if (elms.$listItems.length > 2) {
+   //                      strImgs += '<img src="' + elms.$listItems.eq(2).data('big_src') + '" class="img">';
+   //                  }
+   //              } else if (currentSelect === elms.$listItems.length - 1) {
+   //                  strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 1).data('big_src') + '" class="img">' + strImgs;
+   //                  if (currentSelect - 2 >= 0) {
+   //                      strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 2).data('big_src') + '" class="img">' + strImgs;
+   //                  }
+   //              } else {
+   //                  strImgs = '<img src="' + elms.$listItems.eq(currentSelect - 1).data('big_src') + '" class="img">' + strImgs + '<img src="' + elms.$listItems.eq(currentSelect + 1).data('big_src') + '" class="img">';
+   //              }
+			// }
+			// elms.$boxMainView.append(strImgs);
+			// elms.$img = $('#main_page');
+			// elms.$images = elms.$boxMainView.find('img');
+			// elms.$img.one('load', function() {
+			// 	if (needAutoScroll) {
+			// 		elms.$boxPreviews.scrollTop(0);
+			// 		elms.$boxPreviews.scrollTop( elms.$listItems.eq(currentSelect).position().top - 15 );
+			// 		needAutoScroll = false;
+			// 	}
+			// 	if (currentSelect !== 0) {
+			// 		elms.$boxOuterMainView.scrollTop( elms.$img.position().top );
+			// 	}
+			// });
 			elms.$img.attr('src', $this.data('big_src'));
 
             // $this.find('img').load(function() {//ant
@@ -349,7 +383,7 @@ var pdfViewer = (function(pdfViewer, $) {
 		*/
 		elms.$heightSeparator.on('mousedown', function() {
 			elms.$win.on('mousemove', function(e) {
-				var val = e.pageX - elms.$widthSeparator.offset().left;
+				var val = e.pageX - elms.$boxW.offset().left;
 				if ( val >= pdfViewer.options.minWidthPreview && val < pdfViewer.options.maxWidthPreview ) {
 					widthPreview.setWidth(val);
 					widthPreview.saveWidth(val);
