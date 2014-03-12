@@ -1,4 +1,6 @@
 <?php
+header("Content-Type: text/html;charset=utf-8");// AJAX to IE 7+
+
 $action = (!empty($_REQUEST['action'])) ? $_REQUEST['action'] : null;
 $patch = (!empty($_REQUEST['patch'])) ? 'data/book2' : 'data/book1';
 $url_array = $_GET;
